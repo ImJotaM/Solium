@@ -4,125 +4,49 @@
 #include <stdlib.h>
 #include <raylib.h>
 
-static void CreateWindow(char* fname, int width, int height) {
-
-	const char* prefix = "Solium - Content (";
-	const char* filename = fname;
-	const char* suffix = ")";
-
-	size_t buf = strlen(prefix) + strlen(filename) + strlen(suffix) + 1;
-
-	char* title = (char*)malloc(buf);
-
-	if (title == NULL) {
-		printf("Failed to allocate memory: %s", strerror(errno));
-		return;
-	}
-
-	strcpy(title, prefix);
-	strcat(title, filename);
-	strcat(title, suffix);
-
-	InitWindow(width, height, title);
-	SetTargetFPS(60);
-
-	free(title);
-}
-
-static bool FileExists(const char* filepath) {
-
-	FILE* tf = fopen(filepath, "r");
-	
-	if (tf) {
-		fclose(tf);
-		return true;
-	} else {
-		return false;
-	}
-
-}
-
-static void LoadMainFont(Font* font, const char* fontpath, int fontsize) {
-
-	if (FileExists(fontpath)) {
-		*font = LoadFontEx(fontpath, fontsize, NULL, NULL);
-	} else {
-		printf("Custom font not found. Using default function.");
-		*font = GetFontDefault();
-	}
-
-}
-
 int main(int argc, char* argv[]) {
 
-	if (argc != 2) {
+	if (argc < 2 || argc > 3) {
 
 		printf("Wrong number of arguments.\n");
-		printf("Usage: solium <file>\n");
+		printf("Usage: solium <image-path>\n");
 
 		return -1;
 	}
-
-	int width = 800;
-	int height = 600;
 	
-	CreateWindow(argv[1], width, height);
-	
-	const char* fontpath = "rsc/Consolas.ttf";
-	Font* font = (Font*)malloc(sizeof(struct Font));
-	if (font == NULL) {
-		printf("Failed to allocate memory: %s", strerror(errno));
-		return -1;
-	}
-	float fontsize = 16.f;
+	const char* fpath = argv[1];
+	const char* filename = GetFileName(fpath);
 
-	LoadMainFont(font, fontpath, (int)fontsize);
+	int padding = 0;
 
-	FILE* file = NULL;
-	const char* filepath = "File.txt";
-	file = fopen(filepath, "r");
-
-	if (!file) {
-		TraceLog(LOG_ERROR, "Can't open file '%s': %s", filepath, strerror(errno));
-		return -1;
+	if (argc == 3) {
+		padding = atoi(argv[2]);
 	}
 
-	fseek(file, 0, SEEK_END);
-	long fsize = ftell(file);
-	fseek(file, 0, SEEK_SET);
+	Image image = LoadImage(fpath);
 
-	char* fcontent = NULL;
+	int width = image.width + padding;
+	int height = image.height + padding;
 
-	if (fsize > 0) {
+	InitWindow(width, height, filename);
+	SetTargetFPS(60);
 
-		fcontent = (char*) malloc(fsize);
-
-		if (fcontent != NULL) {
-			fread(fcontent, fsize, 1, file);
-			fcontent[fsize - 1] = '\0';
-		}
-
-	} else {
-		
-		TraceLog(LOG_INFO, "File '%s' is empty", filepath);
-		return 0;
-	}
+	Texture2D texture = LoadTextureFromImage(image);
+	UnloadImage(image);
 
 	while (!WindowShouldClose()) {
 
 		BeginDrawing();
 
-		ClearBackground(BLACK);
+		ClearBackground(RED);
 
-		DrawTextEx(*font, fcontent, (Vector2){ 0, 0 }, fontsize, 1.f , WHITE);
+		DrawTexture(texture, padding / 2, padding / 2, WHITE);
 		
 		EndDrawing();
 
 	}
 
-	free(font);
-	free(fcontent);
-	fclose(file);
+	UnloadTexture(texture);
 
 	CloseWindow();
 
