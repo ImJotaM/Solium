@@ -5,11 +5,15 @@
 
 #define RETURN_RESULT(ERROR_TYPE) { result = ERROR_TYPE; return result; }
 
+#define ARG_PATH 1950649900
+#define ARG_PADD  189261108
+
 enum ERROR_TYPE {
 	NONE = 0,
 	OK,
 	END_EARLY,
 	WARNING,
+	ERROR,
 	FATAL_ERROR
 };
 
@@ -35,6 +39,17 @@ static const char* argDescription[] = {
 	""
 };
 
+const unsigned long Hash(const char* str) {
+
+	unsigned long hash = 5381;
+	int c;
+
+	while ((c = *str++))
+		hash = ((hash << 5) + hash) + c;
+
+	return hash;
+}
+
 static int ParseArgs(ArgumentValues* values, int argc, char* argv[]) {
 
 	int result = NONE;
@@ -54,27 +69,34 @@ static int ParseArgs(ArgumentValues* values, int argc, char* argv[]) {
 
 	for (size_t i = 1; i < argc; ++i) {
 
-		if (strcmp(argv[i], "--path") == 0) {
+		switch (Hash(argv[i])) {
+
+		case ARG_PATH:
+
 			if (i + 1 < argc) {
 				values->filepath = argv[i + 1];
 				++i;
 				continue;
 			} else {
 				printf("\"--path\" argument require a path.\n");
-				RETURN_RESULT(FATAL_ERROR);
+				RETURN_RESULT(ERROR);
 			}
-		} else if (strcmp(argv[i], "--pad") == 0) {
+
+		case ARG_PADD:
+
 			if (i + 1 < argc) {
 				values->padding = atoi(argv[i + 1]);
 				++i;
 				continue;
 			} else {
 				printf("\"--pad\" argument require an int value.\n");
-				RETURN_RESULT(FATAL_ERROR);
+				RETURN_RESULT(ERROR);
 			}
-		} else {
+
+		default:
 			printf("\"%s\" is not a valid argument.", argv[i]);
-			RETURN_RESULT(FATAL_ERROR);
+			break;
+			RETURN_RESULT(ERROR);
 		}
 
 	}
@@ -89,7 +111,7 @@ int main(int argc, char* argv[]) {
 	{
 		int opresult = NONE;
 		opresult = ParseArgs(&values, argc, argv);
-		if (opresult == FATAL_ERROR || opresult == END_EARLY) return ParseArgs;
+		if (opresult == ERROR || opresult == END_EARLY) return ParseArgs;
 	}
 
 	const char* filename = GetFileName(values.filepath);
