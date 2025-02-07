@@ -24,14 +24,15 @@ workspace (ProjectName)
 
 project (ProjectName)
 
-    kind      "ConsoleApp"
-    language  "C"
-    targetdir "$(SolutionDir)bin/$(Configuration)-$(Platform)/$(ProjectName)"
-    objdir    "!$(SolutionDir)bin-int/$(Configuration)-$(Platform)/$(ProjectName)"
-    location  (ProjectDir)
+    targetname "solium"
+    kind       "ConsoleApp"
+    language   "C"
+    targetdir  "$(SolutionDir)bin/$(Configuration)-$(Platform)/$(ProjectName)"
+    objdir     "!$(SolutionDir)bin-int/$(Configuration)-$(Platform)/$(ProjectName)"
+    location   (ProjectDir)
 
-    includedirs "$(SolutionDir)/_Raylib/include"
-    libdirs "$(SolutionDir)/_Raylib/lib"
-    links { "raylib", "winmm" }
+    includedirs { "$(SolutionDir)/_Raylib/include" }
+    libdirs     "$(SolutionDir)/_Raylib/lib"
+    links       { "raylib", "winmm" }
 
-    files { "src/*.c", "src/*.h", "src/File.txt"  }
+    files { "src/*.c", "src/*.h" }
