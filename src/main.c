@@ -5,8 +5,9 @@
 
 #define RETURN_RESULT(ERROR_TYPE) { result = ERROR_TYPE; return result; }
 
-#define ARG_PATH 1950649900
-#define ARG_PADD  189261108
+#define ARG_PATH  1950649900
+#define ARG_PAD    189261108
+#define ARG_COL    189247421
 
 enum ERROR_TYPE {
 	NONE = 0,
@@ -17,26 +18,22 @@ enum ERROR_TYPE {
 	FATAL_ERROR
 };
 
-typedef struct {
-
-	char* filepath;
-	int padding;
-
-} ArgumentValues;
-
 static const char* validArgs[] = {
 	"--path",
-	"--pad "
+	"--pad ",
+	"--col ",
 };
 
 static const char* argUsage[] = {
-	"--path <file-path>",
-	"--pad  <integer>  "
+	"--path <file-path>  ",
+	"--pad  <integer>    ",
+	"--col  <hex-color>  ",
 };
 
 static const char* argDescription[] = {
 	"",
-	""
+	"",
+	"",
 };
 
 const unsigned long Hash(const char* str) {
@@ -50,7 +47,15 @@ const unsigned long Hash(const char* str) {
 	return hash;
 }
 
-static int ParseArgs(ArgumentValues* values, int argc, char* argv[]) {
+typedef struct {
+
+	char* filepath;
+	int padding;
+	unsigned long paddingColor;
+
+} ArgumentValues;
+
+int ParseArgs(ArgumentValues* values, int argc, char* argv[]) {
 
 	int result = NONE;
 
@@ -82,7 +87,7 @@ static int ParseArgs(ArgumentValues* values, int argc, char* argv[]) {
 				RETURN_RESULT(ERROR);
 			}
 
-		case ARG_PADD:
+		case ARG_PAD:
 
 			if (i + 1 < argc) {
 				values->padding = atoi(argv[i + 1]);
@@ -90,6 +95,17 @@ static int ParseArgs(ArgumentValues* values, int argc, char* argv[]) {
 				continue;
 			} else {
 				printf("\"--pad\" argument require an int value.\n");
+				RETURN_RESULT(ERROR);
+			}
+
+		case ARG_COL:
+			
+			if (i + 1 < argc) {
+				values->paddingColor = strtoul(argv[i + 1], NULL, 0);
+				++i;
+				continue;
+			} else {
+				printf("\"--col\" argument require an hex-color value.\n");
 				RETURN_RESULT(ERROR);
 			}
 
@@ -106,7 +122,10 @@ static int ParseArgs(ArgumentValues* values, int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
 
-	ArgumentValues values = { "", 0 };
+	//printf("%d", Hash(argv[1]));
+	//return 0;
+
+	ArgumentValues values = { "", 0, 0xffffffff};
 
 	{
 		int opresult = NONE;
@@ -129,7 +148,7 @@ int main(int argc, char* argv[]) {
 
 		BeginDrawing();
 
-		ClearBackground(RED);
+		ClearBackground(GetColor(values.paddingColor));
 
 		DrawTexture(texture, values.padding / 2, values.padding / 2, WHITE);
 		
